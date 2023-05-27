@@ -17,7 +17,7 @@
 SDL_Window *window;
 SDL_Renderer *renderer;
 TTF_Font *font;
-bool running, random_mode = true;
+bool running, reset, random_mode = true;
 SDL_Color color;
 SDL_Rect paddle, ball, lives, brick,score,scoreword,livesword; /* rectangle */
 float velY, velX;
@@ -25,16 +25,16 @@ int liveCount; /* joon ha */
 int scoreCount;
 std::string scoretext="Score:";
 std::string livestext="Lives:";
+
 bool bricks[ROW*COL]; /* ajor ha */
 
 
 void resetBricks() {
-	if(random_mode)
 		for(int i=0; i<COL*ROW; i++)
-			bricks[i]=rand()%2;
-	else
-		for(int i=0; i<COL*ROW; i++)
-			bricks[i]=true;
+			if(random_mode)
+				bricks[i]=rand()%2;
+			else
+				bricks[i]=true;
 	liveCount=3; /* tedad joon ha ro barabar 3 gharar mide */
 	scoreCount=0;
 	paddle.x=(WIDTH/2)-(paddle.w/2); /* x paddel ro set mikone */
@@ -86,7 +86,7 @@ void update() {
 	if(paddle.x<0) paddle.x=0; //nemizarad ke paddle az samt chap safhe oboor konad.
 	if(paddle.x+paddle.w>WIDTH) paddle.x=WIDTH-paddle.w; //nemizarad ke paddle az samt rast safhe oboor konad.
 
-	bool reset=1;
+	reset=1;
 	for(int i=0; i<COL*ROW; i++) { /* 35 ajor ro rasm kon */
 		setBricks(i);
 		if(SDL_HasIntersection(&ball, &brick) && bricks[i]) { /* agr toop be ajor ha khorde bashad, an ajor ra false mikonad */
@@ -97,9 +97,14 @@ void update() {
 		}
 		if(bricks[i]) reset=0; /* agr ajori monde bashad bazi ra edame bede */
 	}
-	if(reset) resetBricks(); /* You win */
+	
+	if(reset)
+	{
+		SDL_Delay(5000);
+		resetBricks(); /* You win */
+	}
+	
 }
-//ja be ja kardan paddle ba keyboard
 void input() {
 	SDL_Event e;
 	const Uint8 *keystates = SDL_GetKeyboardState(NULL);
@@ -132,8 +137,8 @@ void render() {
 	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 	SDL_RenderFillRect(renderer, &paddle); /* rang kardan paddle */
 	SDL_RenderFillRect(renderer, &ball); /* rang kardan toop */
-
 	write(scoretext + std::to_string(scoreCount), WIDTH/2+5*FONT_SIZE+10, FONT_SIZE); /* neshan dadan joon ha ro safeh */
+
 	write(modetext, WIDTH/2-(FONT_SIZE*modetext.length()/2), FONT_SIZE);
 	write(livestext + std::to_string(liveCount), WIDTH/2-13*FONT_SIZE,FONT_SIZE);
 
